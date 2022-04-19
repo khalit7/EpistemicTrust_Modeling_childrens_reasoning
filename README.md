@@ -1,0 +1,3 @@
+This code is a simulation of an idea based on the work done in Shafto P, Eaves B, Navarro DJ, Perfors A. Epistemic trust: modeling children's reasoning about others' knowledge and intent. Dev Sci. 2012 May;15(3):436-47. doi: 10.1111/j.1467-7687.2012.01135.x. Epub 2012 Feb 28. PMID: 22490183.
+
+The main idea is that we are tring to make a child learn the intent and knowledge of different informants while simultaneously update his beliefs about the world.
