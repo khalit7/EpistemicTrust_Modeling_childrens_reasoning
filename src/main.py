@@ -4,6 +4,7 @@ import pandas as pd # for data manipulation
 import networkx as nx # for drawing graphs
 import matplotlib.pyplot as plt # for drawing graphs
 from matplotlib.animation import FuncAnimation
+import matplotlib.patches as mpatches
 
 # for creating Bayesian Belief Networks (BBN)
 from pybbn.graph.dag import Bbn
@@ -16,7 +17,7 @@ import random
 from copy import deepcopy
 
 from Helper import *
-from collections import defaultdict
+from collections import defaultdict,Counter
 
 
 #################################################################################################################
@@ -157,4 +158,50 @@ def plot_people_k_h():
     plt.show()
     return ani
 
-ani = plot_people_k_h()
+def plot_object_learning():
+    people_stats = Counter(list(people.values()))
+    people_stats = {"K={},H={}".format(k[0],k[1]):v for k,v in people_stats.items()}
+
+    num_plots = 6
+    idx = 0
+    fig, axs = plt.subplots(2,3)
+    axs = axs.flatten()
+    #
+    green_patch = mpatches.Patch(color='green', label='Correct label')
+    red_patch = mpatches.Patch(color='red', label='Wrong label')
+    #
+    def animate(i):
+        nonlocal idx,axs
+        for i in range(num_plots-1):
+            colors = ["red"]*5
+            colors[i] = "green"
+            axs[i].cla()
+            axs[i].bar(list(idx_to_object.values()),child_knowldge_history[idx][i],color=colors)
+            axs[i].title.set_text('Object = {}'.format(idx_to_object[i]))
+            axs[i].set_xlabel("Number of interactions = {}".format(idx+1))
+            axs[i].set_ylabel("Probaility of each object")
+
+            axs[i].legend(handles=[green_patch,red_patch], loc='upper left', shadow=True )
+
+        
+        axs[5].cla()
+        axs[5].bar(list(people_stats.keys()),list(people_stats.values()))
+        axs[5].title.set_text('informants stats'.format(idx_to_object[i]))
+        axs[5].set_ylabel("count")
+        axs[5].set_xlabel(" K=1 => Knowledgable, K=0 => Not Knowledgable \n H=1 => Helpful, H=0 => Not Helpful")
+        
+        ###
+        idx+=1
+
+
+    ani = FuncAnimation(fig,animate,interval = 500,)
+    plt.tight_layout()
+    manager = plt.get_current_fig_manager()
+    manager.full_screen_toggle()
+    plt.show()
+    return ani
+
+#ani = plot_people_k_h()
+ani = plot_object_learning()
+
+
