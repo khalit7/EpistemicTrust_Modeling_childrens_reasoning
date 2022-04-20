@@ -25,7 +25,10 @@ random.random
 #################################################################################################################
 num_interactions = int(input("Please enter the number of interaction the child will make with people : "))
 # print("\n Note that people's actual knowledge and intent as well as the child prior about these two variables will be set randomly \n")
-decsion = int(input("Enter 1 if you wish to choose how many people belong to each catagory, or press enter to do random assignment : "))
+try:
+  decsion = int(input("Enter 1 if you wish to choose how many people belong to each catagory, or press enter to do random assignment : "))
+except:
+  decsion = 5 # any numner wors
 if decsion == 1:
       num_people = None
       K_H=int(input("How many people are knowledgable with good intent ? "))
@@ -35,7 +38,7 @@ if decsion == 1:
       num_people = K_H+K_NH+NK_H+NK_NH
       print("Total number of people = {}".format(num_people))
 else:
-  num_people = int(input("Please enter the number of people : "))
+  num_people = int(input("Please enter the number of people (please enter an even number) : "))
   K_H=None
   K_NH=None
   NK_H=None
