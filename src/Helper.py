@@ -13,8 +13,8 @@ import random
 from copy import deepcopy
 
 ''' Helper functions '''
-def BBN_defnition():
-  K = BbnNode(Variable(0, 'K', ['1', '0']), [0.5, 0.5])
+def BBN_defnition(k_prob,h_prob):
+  K = BbnNode(Variable(0, 'K', ['1', '0']), [k_prob, 1-k_prob])
 
   S = BbnNode(Variable(1, 'S', ['A', 'B', 'C','D','E']), [0.2,0.2,0.2,0.2,0.2])
 
@@ -30,7 +30,7 @@ def BBN_defnition():
                                                               0.2,0.2,0.2,0.2,0.2
                                                               ])
 
-  H = BbnNode(Variable(3, 'H', ['1','0']), [0.5,0.5])
+  H = BbnNode(Variable(3, 'H', ['1','0']), [h_prob,1-h_prob])
 
   L = BbnNode(Variable(4, 'L', ['A', 'B', 'C','D','E']), [
                                                               1,0,0,0,0,
@@ -86,7 +86,7 @@ def visualize_BBN(bbn):
 def create_child_perception_of_people(bbn,n=1):
   people = []
   for i in range(n):
-   people.append (InferenceController.apply(bbn))
+   people.append (InferenceController.apply(bbn[i]))
 
   return people
 
@@ -133,8 +133,24 @@ def update_belief(posteriors,join_tree):
   return InferenceController.reapply(join_tree, k_h_belief)
 
 # create people with different knowledge and helpfulness
-def create_people(num_people):
+def create_people(num_people,K_H=None,K_NH=None,NK_H=None,NK_NH=None):
   people = {}
+  if K_H is not None:
+        idx=0
+        for _ in range(K_H):
+              people[idx] = (1,1)
+              idx+=1
+        for _ in range(K_NH):
+              people[idx] = (1,0)
+              idx+=1
+        for _ in range(NK_H):
+              people[idx] = (0,1)
+              idx+=1
+        for _ in range(NK_NH):
+              people[idx] = (0,0)
+              idx+=1
+        return people
+  # else
   for i in range(num_people):
     knowledge = random.randint(0, 1)
     helpful = random.randint(0, 1)

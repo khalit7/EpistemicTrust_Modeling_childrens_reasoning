@@ -3,7 +3,8 @@ from threading import local
 import pandas as pd # for data manipulation 
 import networkx as nx # for drawing graphs
 import matplotlib.pyplot as plt # for drawing graphs
-from matplotlib.animation import FuncAnimation
+from matplotlib import animation
+from matplotlib.animation import FuncAnimation,PillowWriter 
 import matplotlib.patches as mpatches
 
 # for creating Bayesian Belief Networks (BBN)
@@ -15,16 +16,41 @@ from pybbn.graph.variable import Variable
 from pybbn.pptc.inferencecontroller import InferenceController
 import random
 from copy import deepcopy
+import time
 
 from Helper import *
 from collections import defaultdict,Counter
 
-
+random.random
 #################################################################################################################
-num_people = 50
-bbn = BBN_defnition()
-child_perception_of_people = create_child_perception_of_people(bbn,n=num_people)
-people = create_people(num_people)
+num_interactions = int(input("Please enter the number of interaction the child will make with people : "))
+# print("\n Note that people's actual knowledge and intent as well as the child prior about these two variables will be set randomly \n")
+decsion = int(input("Enter 1 if you wish to choose how many people belong to each catagory, or press enter to do random assignment : "))
+if decsion == 1:
+      num_people = None
+      K_H=int(input("How many people are knowledgable with good intent ? "))
+      K_NH=int(input("How many people are knowledgable with bad intent ? "))
+      NK_H=int(input("How many people are not knowledgable with good intent ? "))
+      NK_NH=int(input("How many people are not knowledgable with bad intent ? "))
+      num_people = K_H+K_NH+NK_H+NK_NH
+      print("Total number of people = {}".format(num_people))
+else:
+  num_people = int(input("Please enter the number of people : "))
+  K_H=None
+  K_NH=None
+  NK_H=None
+  NK_NH=None
+
+bbn_list=[]
+k_h_priors = []
+for i in range(num_people):
+  k_prob = random.uniform(0, 1)
+  h_prob = random.uniform(0, 1)
+  bbn = BBN_defnition(k_prob,h_prob)
+  bbn_list.append(bbn)
+  k_h_priors.append((k_prob,h_prob))
+child_perception_of_people = create_child_perception_of_people(bbn_list,n=num_people)
+people = create_people(num_people,K_H=K_H,K_NH=K_NH,NK_H=NK_H,NK_NH=NK_NH)
 
 h_threshold = 0.5
 
@@ -108,12 +134,12 @@ def update_all_people_belief(votes,s):
 #people = {0:(1,1),1:(1,1),2:(1,0),3:(1,0)}
 # Main loop (where the child interacts with people)
 ##############################################
-num_interactions = 50
+# num_interactions = 10
 #num_interactions = 1
 k_h_result_history = defaultdict(list)
 child_knowldge_history = []
 for i in range (num_interactions):
-
+  print("{}/{} interactions made".format(i+1,num_interactions))
   objects = list(idx_to_object.values())
   presented_obj = present_random_object(objects)
   #presented_obj="A"
@@ -133,6 +159,8 @@ for i in range (num_interactions):
 
 k_h_result_history = dict(k_h_result_history)
 
+input("\n enter anything to visualize the child's learning curve")
+
 def plot_people_k_h():
     max_plots = 6 #keep this number even
     num_plots = min(num_people,max_plots)
@@ -141,17 +169,22 @@ def plot_people_k_h():
     axs = axs.flatten()
     def animate(i):
         nonlocal idx,axs
+        if idx>num_interactions:
+          time.sleep(5)
+          plt.close(fig)
         for i in range(num_plots):
             axs[i].cla()
             axs[i].plot(k_h_result_history[i][0:idx])
             axs[i].title.set_text('Knowledgablity = {}, Helpfulness = {}'.format(people[i][0],people[i][1]))
-            axs[i].legend( ("Knowledgability","Helpfulness"), loc='upper left', shadow=True )
+            axs[i].legend( ("Knowledgability (prior = {:0.2})".format(k_h_priors[i][0]),"Helpfulness (prior = {:0.2})".format(k_h_priors[i][1])), loc='upper left', shadow=True )
             axs[i].set_xlabel("number of interactions")
             axs[i].set_ylabel("Child's belief about K and H")
         idx+=1
 
 
-    ani = FuncAnimation(fig,animate,interval = 100,)
+
+    ani = FuncAnimation(fig,animate,interval = 100,frames=50)
+    fig.suptitle("Child's learning curve for differnet informants intent and knoweldge")
     plt.tight_layout()
     manager = plt.get_current_fig_manager()
     manager.full_screen_toggle()
@@ -172,6 +205,10 @@ def plot_object_learning():
     #
     def animate(i):
         nonlocal idx,axs
+        if idx>=num_interactions:
+            time.sleep(5)
+            plt.close(fig)
+            return
         for i in range(num_plots-1):
             colors = ["red"]*5
             colors[i] = "green"
@@ -195,13 +232,14 @@ def plot_object_learning():
 
 
     ani = FuncAnimation(fig,animate,interval = 500,)
+    fig.suptitle("Child's learning curve for different objects")
     plt.tight_layout()
     manager = plt.get_current_fig_manager()
     manager.full_screen_toggle()
     plt.show()
     return ani
 
-#ani = plot_people_k_h()
+ani = plot_people_k_h()
 ani = plot_object_learning()
 
 
